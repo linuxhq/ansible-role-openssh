@@ -1,0 +1,37 @@
+---
+openssh_auth: []
+openssh_client:
+  default:
+    ForwardX11Trusted: yes
+    GSSAPIAuthentication: yes
+    SendEnv:
+      - LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+      - LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+      - LC_IDENTIFICATION LC_ALL LANGUAGE
+      - XMODIFIERS 
+openssh_server:
+  default:
+    AcceptEnv:
+      - LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+      - LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+      - LC_IDENTIFICATION LC_ALL LANGUAGE
+      - XMODIFIERS
+    AddressFamily: any
+    AuthorizedKeysFile: .ssh/authorized_keys
+    ChallengeResponseAuthentication: no
+    GSSAPIAuthentication: yes
+    GSSAPICleanupCredentials: no
+    HostKey:
+      - /etc/ssh/ssh_host_rsa_key
+      - /etc/ssh/ssh_host_ecdsa_key
+      - /etc/ssh/ssh_host_ed25519_key
+    PasswordAuthentication: yes
+    PermitRootLogin: yes
+    Port: 22
+    Protocol: 2
+    Subsystem: 'sftp /usr/libexec/openssh/sftp-server'
+    SyslogFacility: AUTHPRIV
+    UsePAM: yes
+    UsePrivilegeSeparation: sandbox
+    X11Forwarding: yes
+...

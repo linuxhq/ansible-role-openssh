@@ -1,0 +1,79 @@
+---
+- name: Ensure that the openssh packages are installed
+  tags: openssh
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  register: openssh_yum
+  with_items:
+    - openssh
+    - openssh-clients
+    - openssh-server
+
+- block:
+    - name: Applying group configurations
+      group:
+        name: "{{ item.key }}"
+        gid: "{{ item.value.gid|default(item.value.uid) }}"
+        system: "{{ item.value.system|default(omit) }}"
+        state: "{{ item.value.state|default('present') }}"
+      with_dict: "{{ openssh_auth }}"
+      when:
+        - item.key is defined
+        - item.value.uid is defined
+
+    - name: Applying user configurations
+      user:
+        name: "{{ item.key }}"
+        comment: "{{ item.value.comment|default(item.key) }}"
+        group: "{{ item.value.group|default(item.value.uid) }}"
+        groups: "{{ item.value.groups|default([])|join(',') }}"
+        password: "{{ item.value.pass|default('!!') }}"
+        shell: "{{ item.value.shell|default('/bin/bash') }}"
+        uid: "{{ item.value.uid }}"
+        state: "{{ item.value.state|default('present') }}"
+      with_dict: "{{ openssh_auth }}"
+      when:
+        - item.key is defined
+        - item.value.uid is defined
+
+    - name: Applying public key configurations
+      authorized_key:
+        exclusive: "{{ item.value.exclusive|default('yes') }}"
+        key: "{{ item.value.key }}"
+        key_options: "{{ item.value.key_options|default([])|join(',') }}"
+        manage_dir: "{{ item.value.manage_dir|default('no') }}"
+        path: "{{ item.value.path }}/{{ item.key }}"
+        state: "{{ item.value.state|default('present') }}"
+        user: "{{ item.key }}"
+      with_dict: "{{ openssh_auth }}"
+      when:
+        - item.key is defined
+        - item.value.key is defined
+        - item.value.path is defined
+  tags: openssh
+  when: openssh_auth is defined
+
+- block:
+    - name: Applying openssh client and server configurations
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: "{{ item.mode }}"
+      with_items:
+        - { src: ssh_config.j2, dest: /etc/ssh/ssh_config, mode: '0644' }
+        - { src: sshd_config.j2, dest: /etc/ssh/sshd_config, mode: '0600' }
+        - { src: sshd.sysconfig.j2, dest: /etc/sysconfig/sshd, mode: '0640' }
+      notify: restart sshd
+
+    - name: Enable and start the sshd service
+      service:
+        enabled: yes
+        name: sshd
+        state: started
+  tags: openssh
+  when: openssh_yum|success
+...

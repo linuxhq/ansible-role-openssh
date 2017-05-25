@@ -1,0 +1,20 @@
+# {{ ansible_managed }}
+{% if openssh_client is defined %}
+{%   for k in openssh_client %}
+
+Host {{ '*' if k == 'default' else k|regex_replace('_', '.') }}
+{%     for o, v in openssh_client[k].iteritems()|sort %}
+{%       if v is sameas true %}
+  {{ o }} yes
+{%       elif v is sameas false %}
+  {{ o }} no
+{%       elif v is string or v is number %}
+  {{ o }} {{ v }}
+{%       else %}
+{%         for i in v %}
+  {{ o }} {{ i }}
+{%         endfor %}
+{%       endif %}
+{%     endfor %}
+{%   endfor %}
+{% endif %}

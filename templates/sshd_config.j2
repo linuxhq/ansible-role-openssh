@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+
+{% if openssh_server is defined %}
+{%   for k in openssh_server %}
+{%     if k != 'default' %}
+
+Match User {{ k }}
+{%     endif %}
+{%     for o, v in openssh_server[k].iteritems()|sort %}
+{%       if v is sameas true %}
+{{ '  ' if k != 'default' else '' }}{{ o }} yes
+{%       elif v is sameas false %}
+{{ '  ' if k != 'default' else '' }}{{ o }} no
+{%       elif v is string or v is number %}
+{{ '  ' if k != 'default' else '' }}{{ o }} {{ v }}
+{%       else %}
+{%         for i in v %}
+{{ '  ' if k != 'default' else '' }}{{ o }} {{ i }}
+{%         endfor %}
+{%       endif %}
+{%     endfor %}
+{%   endfor %}
+{% endif %}
