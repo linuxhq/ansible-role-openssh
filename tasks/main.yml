@@ -13,6 +13,7 @@
 
 - block:
     - name: Applying group configurations
+      no_log: True
       group:
         name: "{{ item.key }}"
         gid: "{{ item.value.gid|default(item.value.uid) }}"
@@ -24,6 +25,7 @@
         - item.value.uid is defined
 
     - name: Applying user configurations
+      no_log: True
       user:
         name: "{{ item.key }}"
         comment: "{{ item.value.comment|default(item.key) }}"
@@ -39,6 +41,7 @@
         - item.value.uid is defined
 
     - name: Applying public key configurations
+      no_log: True
       authorized_key:
         exclusive: "{{ item.value.exclusive|default('yes') }}"
         key: "{{ item.value.key }}"
