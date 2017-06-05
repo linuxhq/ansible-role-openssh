@@ -47,14 +47,13 @@
         key: "{{ item.value.key }}"
         key_options: "{{ item.value.key_options|default([])|join(',') }}"
         manage_dir: "{{ item.value.manage_dir|default('no') }}"
-        path: "{{ item.value.path }}/{{ item.key }}"
+        path: "{{ item.value.path|default(omit) }}"
         state: "{{ item.value.state|default('present') }}"
         user: "{{ item.key }}"
       with_dict: "{{ openssh_auth }}"
       when:
         - item.key is defined
         - item.value.key is defined
-        - item.value.path is defined
   tags: openssh
   when: openssh_auth is defined
 
