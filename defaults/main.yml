@@ -1,5 +1,6 @@
 ---
-openssh_auth: []
+openssh_groups: []
+openssh_users: []
 openssh_client:
   default:
     ForwardX11Trusted: yes

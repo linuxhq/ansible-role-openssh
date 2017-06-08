@@ -15,14 +15,14 @@
     - name: Applying group configurations
       no_log: True
       group:
-        name: "{{ item.key }}"
-        gid: "{{ item.value.gid|default(item.value.uid) }}"
-        system: "{{ item.value.system|default(omit) }}"
-        state: "{{ item.value.state|default('present') }}"
-      with_dict: "{{ openssh_auth }}"
+        name: "{{ item.name }}"
+        gid: "{{ item.gid }}"
+        system: "{{ item.system|default(omit) }}"
+        state: "{{ item.state|default('present') }}"
+      with_items: "{{ openssh_groups }}"
       when:
-        - item.key is defined
-        - item.value.uid is defined
+        - item.name is defined
+        - item.gid is defined
 
     - name: Applying user configurations
       no_log: True
@@ -35,7 +35,7 @@
         shell: "{{ item.value.shell|default('/bin/bash') }}"
         uid: "{{ item.value.uid }}"
         state: "{{ item.value.state|default('present') }}"
-      with_dict: "{{ openssh_auth }}"
+      with_dict: "{{ openssh_users }}"
       when:
         - item.key is defined
         - item.value.uid is defined
@@ -50,12 +50,12 @@
         path: "{{ item.value.path|default(omit) }}"
         state: "{{ item.value.state|default('present') }}"
         user: "{{ item.key }}"
-      with_dict: "{{ openssh_auth }}"
+      with_dict: "{{ openssh_users }}"
       when:
         - item.key is defined
         - item.value.key is defined
   tags: openssh
-  when: openssh_auth is defined
+  when: openssh_users is defined
 
 - block:
     - name: Applying openssh client and server configurations

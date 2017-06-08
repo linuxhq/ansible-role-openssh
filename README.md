@@ -12,7 +12,8 @@ None
 
 Available variables are listed below, along with default values:
 
-    openssh_auth: []
+    openssh_groups: []
+    openssh_users: []
 
     openssh_client:
       default:
@@ -79,16 +80,15 @@ None
     - hosts: servers
       roles:
         - role: linuxhq.openssh
-          openssh_auth:
+          openssh_users:
             root:
               uid: 0
               path: /etc/ssh/authorized_keys
               shell: /sbin/nologin
             username:
               uid: 1000
+              group: wheel
               path: /etc/ssh/authorized_keys
-              groups:
-                - wheel
               key: |
                 ssh-rsa {...} username@linuxhq.org
               pass: crypt
