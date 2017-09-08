@@ -13,7 +13,7 @@ None
 Available variables are listed below, along with default values:
 
     openssh_groups: []
-    openssh_users: []
+    openssh_users: {}
 
     openssh_client:
       default:
