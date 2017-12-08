@@ -12,8 +12,7 @@ None
 
 Available variables are listed below, along with default values:
 
-    openssh_groups: []
-    openssh_users: {}
+    openssh_auth: []
 
     openssh_client:
       default:
@@ -33,7 +32,6 @@ Available variables are listed below, along with default values:
           - LC_IDENTIFICATION LC_ALL LANGUAGE
           - XMODIFIERS
         AddressFamily: any
-        AuthorizedKeysFile: .ssh/authorized_keys
         ChallengeResponseAuthentication: no
         GSSAPIAuthentication: yes
         GSSAPICleanupCredentials: no
@@ -80,18 +78,19 @@ None
     - hosts: servers
       roles:
         - role: linuxhq.openssh
-          openssh_users:
-            root:
-              uid: 0
-              path: /etc/ssh/authorized_keys
+          openssh_auth:
+            - name: root
+              exclusive: yes
+              key_options: []
               shell: /sbin/nologin
-            username:
-              uid: 1000
+              uid: 0
+            - name: tkimball
+              exclusive: yes
               group: wheel
-              path: /etc/ssh/authorized_keys
-              key: |
-                ssh-rsa {...} username@linuxhq.org
-              pass: crypt
+              key: ssh-rsa {...}
+              key_options: []
+              password: {...}
+              uid: 1000
           openssh_client:
             default:
               ForwardAgent: no
@@ -101,7 +100,6 @@ None
           openssh_server:
             default:
               AllowAgentForwarding: no
-              AuthorizedKeysFile: /etc/ssh/authorized_keys/%u
               Ciphers: aes128-ctr,aes192-ctr,aes256-ctr
               HostbasedAuthentication: no
               HostKey:
@@ -116,7 +114,7 @@ None
 
 ## License
 
-BSD
+GPLv3
 
 ## Author Information
 
