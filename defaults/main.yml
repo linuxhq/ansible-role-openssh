@@ -1,6 +1,5 @@
 ---
-openssh_groups: []
-openssh_users: {}
+openssh_auth: []
 openssh_client:
   default:
     ForwardX11Trusted: yes
@@ -18,7 +17,6 @@ openssh_server:
       - LC_IDENTIFICATION LC_ALL LANGUAGE
       - XMODIFIERS
     AddressFamily: any
-    AuthorizedKeysFile: .ssh/authorized_keys
     ChallengeResponseAuthentication: no
     GSSAPIAuthentication: yes
     GSSAPICleanupCredentials: no

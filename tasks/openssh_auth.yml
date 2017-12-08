@@ -1,0 +1,60 @@
+---
+- name: Applying group configurations
+  no_log: true
+  group:
+    gid: "{{ item.gid|default(omit) }}"
+    name: "{{ item.group|default(item.name) }}"
+    state: "{{ item.state|default('present') }}"
+    system: "{{ item.system|default('no') }}"
+  with_items: "{{ openssh_auth }}"
+
+- name: Applying user configurations
+  no_log: true
+  user:
+    append: "{{ item.append|default('no') }}"
+    comment: "{{ item.comment|default(item.name) }}"
+    createhome: "{{ item.createhome|default(omit) }}"
+    generate_ssh_key: "{{ item.generate_ssh_key|default('no') }}"
+    group: "{{ item.group|default(omit) }}"
+    groups: "{{ item.groups|default([])|join(',') }}"
+    home: "{{ item.home|default(omit) }}"
+    local: "{{ item.local|default(omit) }}"
+    login_class: "{{ item.login_class|default(omit) }}"
+    move_home: "{{ item.move_home|default('no') }}"
+    name: "{{ item.name }}"
+    non_unique: "{{ item.non_unique|default('no') }}"
+    password: "{{ item.password|default('!!') }}"
+    seuser: "{{ item.seuser|default(omit) }}"
+    shell: "{{ item.shell|default('/bin/bash') }}"
+    skeleton: "{{ item.skeleton|default(omit) }}"
+    ssh_key_bits: "{{ item.ssh_key_bits|default(omit) }}"
+    ssh_key_comment: "{{ item.ssh_key_comment|default(item.name) }}"
+    ssh_key_file: "{{ item.ssh_key_file|default(omit) }}"
+    ssh_key_passphrase: "{{ item.ssh_key_passphrase|default(omit) }}"
+    ssh_key_type: "{{ item.ssh_key_type|default(omit) }}"
+    state: "{{ item.state|default('present') }}"
+    system: "{{ item.system|default('no') }}"
+    uid: "{{ item.uid }}"
+    update_password: "{{ item.update_password|default('always') }}"
+  with_items: "{{ openssh_auth }}"
+  when:
+    - item.name is defined
+    - item.uid is defined
+
+- name: Applying public key configurations
+  no_log: true
+  authorized_key:
+    comment: "{{ item.comment|default(item.name) }}"
+    exclusive: "{{ item.exclusive|default('no') }}"
+    key: "{{ item.key }}"
+    key_options: "{{ item.key_options|default([])|join(',') }}"
+    manage_dir: "{{ item.manage_dir|default('yes') }}"
+    path: "{{ item.path|default(omit) }}"
+    state: "{{ item.state|default('present') }}"
+    user: "{{ item.name }}"
+    validate_certs: "{{ item.validate_certs|default(omit) }}"
+  with_items: "{{ openssh_auth }}"
+  when:
+    - item.key is defined
+    - item.name is defined
+...

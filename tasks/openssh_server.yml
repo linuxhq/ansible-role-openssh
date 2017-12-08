@@ -1,0 +1,19 @@
+---
+- name: Applying openssh server configurations
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  notify: restart sshd
+  with_items:
+    - { src: sshd_config.j2, dest: /etc/ssh/sshd_config, mode: '0600' }
+    - { src: sshd.sysconfig.j2, dest: /etc/sysconfig/sshd, mode: '0640' }
+
+- name: Enable and start the sshd service on boot
+  service:
+    enabled: yes
+    name: sshd
+    state: started
+...

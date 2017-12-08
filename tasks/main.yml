@@ -1,10 +1,10 @@
 ---
 - name: Ensure that the openssh packages are installed
   tags: openssh
+  become: true
   yum:
     name: "{{ item }}"
     state: present
-    update_cache: yes
   register: openssh_yum
   with_items:
     - openssh
@@ -12,70 +12,24 @@
     - openssh-server
 
 - block:
-    - name: Applying group configurations
-      no_log: True
-      group:
-        name: "{{ item.name }}"
-        gid: "{{ item.gid }}"
-        system: "{{ item.system|default(omit) }}"
-        state: "{{ item.state|default('present') }}"
-      with_items: "{{ openssh_groups }}"
+    - name: Execute openssh authentication task list
+      import_tasks: openssh_auth.yml
       when:
-        - item.name is defined
-        - item.gid is defined
+        - openssh_auth is defined
+        - openssh_auth|length > 0
 
-    - name: Applying user configurations
-      no_log: True
-      user:
-        name: "{{ item.key }}"
-        comment: "{{ item.value.comment|default(item.key) }}"
-        group: "{{ item.value.group|default(item.value.uid) }}"
-        groups: "{{ item.value.groups|default([])|join(',') }}"
-        password: "{{ item.value.pass|default('!!') }}"
-        shell: "{{ item.value.shell|default('/bin/bash') }}"
-        uid: "{{ item.value.uid }}"
-        state: "{{ item.value.state|default('present') }}"
-      with_dict: "{{ openssh_users }}"
+    - name: Executing openssh client task list
+      import_tasks: openssh_client.yml
       when:
-        - item.key is defined
-        - item.value.uid is defined
+        - openssh_client is defined
+        - openssh_client|length > 0 
 
-    - name: Applying public key configurations
-      no_log: True
-      authorized_key:
-        exclusive: "{{ item.value.exclusive|default('yes') }}"
-        key: "{{ item.value.key }}"
-        key_options: "{{ item.value.key_options|default([])|join(',') }}"
-        manage_dir: "{{ item.value.manage_dir|default('no') }}"
-        path: "{{ item.value.path|default(omit) }}"
-        state: "{{ item.value.state|default('present') }}"
-        user: "{{ item.key }}"
-      with_dict: "{{ openssh_users }}"
+    - name: Executing openssh server task list
+      import_tasks: openssh_server.yml
       when:
-        - item.key is defined
-        - item.value.key is defined
+        - openssh_server is defined
+        - openssh_server|length > 0
   tags: openssh
-  when: openssh_users is defined
-
-- block:
-    - name: Applying openssh client and server configurations
-      template:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        owner: root
-        group: root
-        mode: "{{ item.mode }}"
-      with_items:
-        - { src: ssh_config.j2, dest: /etc/ssh/ssh_config, mode: '0644' }
-        - { src: sshd_config.j2, dest: /etc/ssh/sshd_config, mode: '0600' }
-        - { src: sshd.sysconfig.j2, dest: /etc/sysconfig/sshd, mode: '0640' }
-      notify: restart sshd
-
-    - name: Enable and start the sshd service
-      service:
-        enabled: yes
-        name: sshd
-        state: started
-  tags: openssh
+  become: true
   when: openssh_yum|success
 ...
