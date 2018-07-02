@@ -1,6 +1,7 @@
 ---
 dependencies: []
 galaxy_info:
+  role_name: openssh
   author: tkimball83
   description: RHEL/CentOS - OpenSSH SSH daemon
   license: GPLv3
@@ -11,6 +12,5 @@ galaxy_info:
         - 6
         - 7
   galaxy_tags:
-    - openssh
     - ssh
 ...
