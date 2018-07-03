@@ -11,25 +11,38 @@
     - openssh-clients
     - openssh-server
 
-- block:
-    - name: Execute openssh authentication task list
-      import_tasks: openssh_auth.yml
-      when:
-        - openssh_auth is defined
-        - openssh_auth|length > 0
-
-    - name: Executing openssh client task list
-      import_tasks: openssh_client.yml
-      when:
-        - openssh_client is defined
-        - openssh_client|length > 0 
-
-    - name: Executing openssh server task list
-      import_tasks: openssh_server.yml
-      when:
-        - openssh_server is defined
-        - openssh_server|length > 0
+- name: Attempting to overlay openssh client configurations
   tags: openssh
   become: true
-  when: openssh_yum|success
+  template:
+    src: ssh_config.j2
+    dest: /etc/ssh/ssh_config
+    owner: root
+    group: root
+    mode: 0644
+  when: openssh_yum is success
+
+- name: Attempting to overlay openssh server configurations
+  tags: openssh
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  notify: restart sshd
+  with_items:
+    - { src: sshd_config.j2, dest: /etc/ssh/sshd_config, mode: '0600' }
+    - { src: sshd.sysconfig.j2, dest: /etc/sysconfig/sshd, mode: '0640' }
+  when: openssh_yum is success
+
+- name: Ensure that sshd is started and enabled on boot
+  tags: openssh
+  become: true
+  service:
+    enabled: yes
+    name: sshd
+    state: started
+  when: openssh_yum is success
 ...
