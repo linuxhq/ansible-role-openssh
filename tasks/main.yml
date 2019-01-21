@@ -5,8 +5,7 @@
   yum:
     name: "{{ item }}"
     state: present
-  register: openssh_yum
-  with_items:
+  loop:
     - openssh
     - openssh-clients
     - openssh-server
@@ -20,22 +19,22 @@
     owner: root
     group: root
     mode: 0644
-  when: openssh_yum is success
 
 - name: Attempting to overlay openssh server configurations
   tags: openssh
   become: true
   template:
     src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    dest: "{{ item.dst }}"
     owner: root
     group: root
     mode: "{{ item.mode }}"
   notify: restart sshd
-  with_items:
-    - { src: sshd_config.j2, dest: /etc/ssh/sshd_config, mode: '0600' }
-    - { src: sshd.sysconfig.j2, dest: /etc/sysconfig/sshd, mode: '0640' }
-  when: openssh_yum is success
+  loop:
+    - { src: sshd_config.j2, dst: /etc/ssh/sshd_config, mode: '0600' }
+    - { src: sshd.sysconfig.j2, dst: /etc/sysconfig/sshd, mode: '0640' }
+  loop_control:
+    label: "{{ item.dst|basename }}"
 
 - name: Ensure that sshd is started and enabled on boot
   tags: openssh
@@ -44,5 +43,4 @@
     enabled: yes
     name: sshd
     state: started
-  when: openssh_yum is success
 ...
